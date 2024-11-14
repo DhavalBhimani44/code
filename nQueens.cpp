@@ -4,7 +4,6 @@ using namespace std;
 
 #define N 8
 
-// Function to print the board
 void printBoard(vector<vector<int>>& board) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
