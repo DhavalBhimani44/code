@@ -1,80 +1,74 @@
 #include <iostream>
 #include <vector>
-#include <queue>
-#include <utility>
-#include <limits>
-
+#include <climits>
 using namespace std;
 
-void dijkstra(int src, const vector<vector<pair<int, int>>> &graph, vector<int> &dist, vector<bool> &sptSet) {
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
-    
-    dist[src] = 0;
-    pq.push({0, src});
+void dijkstra(int n, vector<vector<int>> &graph, int src) {
+    vector<int> dist(n, INT_MAX);  // Shortest distances from the source
+    vector<bool> sptSet(n, false); // SPT set: tracks nodes included in the shortest path tree
+    vector<int> parent(n, -1);     // To store the SPT
 
-    while (!pq.empty()) {
-        int u = pq.top().second;  
-        pq.pop();
+    dist[src] = 0; // Distance to the source is 0
+
+    for (int count = 0; count < n - 1; ++count) {
+        int u = -1;
+
+        // Find the nearest unvisited node
+        for (int i = 0; i < n; ++i)
+            if (!sptSet[i] && (u == -1 || dist[i] < dist[u]))
+                u = i;
 
         sptSet[u] = true;
 
-        for (const auto &neighbor : graph[u]) {
-            int v = neighbor.first;
-            int weight = neighbor.second;
-
-            // If the distance to v can be minimized
-            if (!sptSet[v] && dist[u] + weight < dist[v]) {
-                dist[v] = dist[u] + weight;
-                pq.push({dist[v], v});  
+        // Update distances for adjacent nodes
+        for (int v = 0; v < n; ++v) {
+            if (graph[u][v] && !sptSet[v] && dist[u] + graph[u][v] < dist[v]) {
+                dist[v] = dist[u] + graph[u][v];
+                parent[v] = u;
             }
         }
     }
+
+    // Print the SPT set and distances
+    cout << "SPT Set (Node: Parent -> Distance):\n";
+    for (int i = 0; i < n; ++i)
+        if (i == src)
+            cout << "Node " << i << " : Root\n";
+        else
+            cout << "Node " << i << " : " << parent[i] << " -> " << dist[i] << "\n";
+
+    cout << "\nShortest distances from node " << src << ":\n";
+    for (int i = 0; i < n; ++i)
+        cout << "Node " << i << " : " << dist[i] << "\n";
 }
 
 int main() {
-    int V, E;
-    cout << "Enter number of vertices and edges: ";
-    cin >> V >> E;
+    int n, m;
+    cout << "Enter the number of nodes: ";
+    cin >> n;
 
-    // Graph representation: adjacency list
-    vector<vector<pair<int, int>>> graph(V);
+    cout << "Enter the number of edges: ";
+    cin >> m;
 
-    cout << "Enter edges (source, destination, weight):\n";
-    for (int i = 0; i < E; ++i) {
+    vector<vector<int>> graph(n, vector<int>(n, 0));
+
+    cout << "Enter the edges in the format (u v w):\n";
+    for (int i = 0; i < m; ++i) {
         int u, v, w;
         cin >> u >> v >> w;
-        graph[u].push_back({v, w});
-        graph[v].push_back({u, w});  // Remove this line if the graph is directed
+        graph[u][v] = w; // Directed edge from u to v
+        graph[v][u] = w; // Uncomment this line if the graph is undirected
     }
 
     int src;
-    cout << "Enter the source vertex: ";
+    cout << "Enter the source node: ";
     cin >> src;
 
-    vector<int> dist(V, numeric_limits<int>::max());
-
-    vector<bool> sptSet(V, false);
-
-    dijkstra(src, graph, dist, sptSet);
-
-    cout << "\nShortest distances from source vertex " << src << ":\n";
-    for (int i = 0; i < V; ++i) {
-        if (dist[i] == numeric_limits<int>::max()) {
-            cout << "Vertex " << i << ": Unreachable\n";
-        } else {
-            cout << "Vertex " << i << ": " << dist[i] << "\n";
-        }
-    }
-
-    cout << "\nVertices in the Shortest Path Tree (SPT):\n";
-    for (int i = 0; i < V; ++i) {
-        if (sptSet[i]) {
-            cout << "Vertex " << i << " is included in the SPT.\n";
-        }
-    }
+    dijkstra(n, graph, src);
 
     return 0;
 }
+
 
 
 // 0 1 5

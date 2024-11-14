@@ -1,79 +1,50 @@
 #include <iostream>
-#include <queue> 
-#include <vector> 
-#include <algorithm> 
-
+#include <queue>
+#include <vector>
 using namespace std;
 
-int optimalMergePattern(int files[], int n) {
+int optimalMergePattern(vector<int> &files) {
     priority_queue<int, vector<int>, greater<int>> minHeap;
 
-    for (int i = 0; i < n; ++i) {
-        minHeap.push(files[i]);
-    }
+    // Add all file sizes to the min-heap
+    for (int file : files)
+        minHeap.push(file);
 
     int totalCost = 0;
 
+    // Merge until only one file remains
     while (minHeap.size() > 1) {
-        int first = minHeap.top(); minHeap.pop();
-        int second = minHeap.top(); minHeap.pop();
+        // Extract two smallest files
+        int first = minHeap.top();
+        minHeap.pop();
+        int second = minHeap.top();
+        minHeap.pop();
 
-        int mergedFile = first + second;
-        totalCost += mergedFile;
+        // Merge the two files
+        int mergeCost = first + second;
+        totalCost += mergeCost;
 
-        minHeap.push(mergedFile);
+        cout << "Merging files of size " << first << " and " << second << " with cost " << mergeCost << endl;
+
+        minHeap.push(mergeCost);
     }
 
     return totalCost;
 }
 
-void printFiles(int files[], int n) {
-    cout << "\nFiles: ";
-    for (int i = 0; i < n; ++i) {
-        cout << files[i] << " ";
-    }
-    cout << endl;
-}
-
-void printSortedFiles(int files[], int n) {
-    int sortedFiles[100]; 
-    for (int i = 0; i < n; ++i) {
-        sortedFiles[i] = files[i];
-    }
-
-    sort(sortedFiles, sortedFiles + n);
-
-    cout << "Sorted Files: ";
-    for (int i = 0; i < n; ++i) {
-        cout << sortedFiles[i] << " ";
-    }
-    cout << endl;
-}
-
 int main() {
-    int numFiles;
-    cout << "Enter number of files: ";
-    cin >> numFiles;
+    int n;
+    cout << "Enter the number of files: ";
+    cin >> n;
 
-    if (numFiles > 100) {
-        cout << "Number of files exceeds the limit (100)." << endl;
-        return 1;
-    }
-
-    int files[100]; 
-    
-    cout << "Enter the weight of each file:\n";
-    for (int i = 0; i < numFiles; ++i) {
-        cout << "File " << i + 1 << ": ";
+    vector<int> files(n);
+    cout << "Enter the sizes of the files:\n";
+    for (int i = 0; i < n; ++i)
         cin >> files[i];
-    }
 
-    printFiles(files, numFiles);
-
-    printSortedFiles(files, numFiles);
-
-    int result = optimalMergePattern(files, numFiles);
-    cout << "\nMinimum cost to merge files: " << result << endl;
+    cout << "\nSteps of merging files:\n";
+    int minCost = optimalMergePattern(files);
+    cout << "\nMinimum cost of merging files: " << minCost << endl;
 
     return 0;
 }
