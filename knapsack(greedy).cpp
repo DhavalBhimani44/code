@@ -1,58 +1,67 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-
+#include<iostream>
+#include<algorithm>
+#include<vector>
 using namespace std;
 
-// Structure to represent an item
-struct Item {
-    int weight, value;
-    double ratio;
+struct Item{
+    int weight;
+    int value;
 };
 
-// Comparator function to sort items based on value-to-weight ratio
 bool compare(Item a, Item b) {
-    return a.ratio > b.ratio;  // Descending order
+    double r1 = (double) a.value/a.weight;
+    double r2 = (double) b.value/b.weight;
+    return r1 > r2;  
 }
 
-double fractionalKnapsack(int W, vector<int>& weights, vector<int>& values) {
-    int n = weights.size();
-    vector<Item> items(n);
+double knapsack_greedy(int maxCap, vector<Item>& items) {
+    double maxVal = 0.0;
+    vector<double> fractions(items.size(), 0);  // To store fractions of each item included
 
-    // Prepare items with value-to-weight ratio
-    for (int i = 0; i < n; ++i) {
-        items[i] = {weights[i], values[i], (double)values[i] / weights[i]};
-    }
+    sort(items.begin(), items.end(), compare);  // Sort items based on value/weight ratio
 
-    // Sort items based on value-to-weight ratio
-    sort(items.begin(), items.end(), compare);
-
-    double totalValue = 0.0;  // To store the total value of items picked
-    int remainingCapacity = W;
-
-    for (int i = 0; i < n && remainingCapacity > 0; ++i) {
-        if (items[i].weight <= remainingCapacity) {
-            // Take the whole item
-            totalValue += items[i].value;
-            remainingCapacity -= items[i].weight;
+    for(int i = 0; i < items.size(); i++) {
+        if(items[i].weight <= maxCap) {
+            // If the entire item can be included
+            maxCap -= items[i].weight;
+            maxVal += items[i].value;
+            fractions[i] = 1;  // The whole item is included
         } else {
-            // Take a fraction of the item
-            totalValue += items[i].ratio * remainingCapacity;
-            break;  // Knapsack is full
+            // If only a fraction of the item can be included
+            maxVal += (double)(maxCap * (items[i].value / items[i].weight));
+            fractions[i] = (double)maxCap / items[i].weight;  // Fraction of the item included
+            break;  // The knapsack is full
         }
     }
 
-    return totalValue;
+    // Print the details for each item
+    cout << "\nItem\tWeight\tFraction";
+    for (int i = 0; i < items.size(); i++) {
+        cout << i + 1 << "\t" << items[i].weight << "\t" << fractions[i] << "\t\t" << endl;
+    }
+
+    return maxVal;
 }
 
 int main() {
-    int W = 15;  // Maximum weight capacity of the knapsack
-    vector<int> weights = {2, 3, 5, 7, 1, 4, 1};  // Weights of items
-    vector<int> values = {10, 5, 15, 7, 6, 18, 3};  // Values of items
+    int maxCap, n;
 
-    double maxValue = fractionalKnapsack(W, weights, values);
-    
-    cout << "Maximum profit (Fractional) we can obtain = " << maxValue << endl;
+    cout << "Enter max capacity of knapsack: ";
+    cin >> maxCap;
 
-    return 0;
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    vector<Item> items(n);
+
+    for(int i = 0; i < n; i++) {
+        cout << "Enter weight for item " << i + 1 << ": ";
+        cin >> items[i].weight;
+        cout << "Enter value for item " << i + 1 << ": ";
+        cin >> items[i].value;
+    }
+
+    double maxValue = knapsack_greedy(maxCap, items);
+
+    cout << "\nMaximum value of knapsack: " << maxValue << endl;
 }
